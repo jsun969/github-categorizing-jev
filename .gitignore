@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.output/
+.tanstack/
+.vite/
+.env
+.env.*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store
