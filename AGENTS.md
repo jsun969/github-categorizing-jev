@@ -10,6 +10,7 @@
 
 - Use Gitmoji for every commit message: `<emoji> <English description>`.
 - Choose the Gitmoji that matches the change. Example: `⚗️ Add GitHub star list experiments`.
+- Commit completed, coherent changes proactively without waiting for an explicit user request; use your judgment to make multiple commits for one prompt or no commit when there is no commit-worthy change.
 
 ## Maintenance
 
