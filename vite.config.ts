@@ -5,8 +5,14 @@ import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [tailwindcss(), tanstackStart(), nitro({ preset: "node-server" }), react()],
+  plugins: [
+    tailwindcss(),
+    tanstackStart(),
+    nitro({ preset: "node-server" }),
+    react(),
+  ],
   server: {
+    host: "127.0.0.1",
     port: 3000,
   },
 });
