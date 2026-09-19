@@ -24,6 +24,8 @@
 - Project name: `github-categorizing-jev`.
 - Package manager: `pnpm`.
 - Stack: TypeScript, React, TanStack Start, Hono, and HeroUI.
+- Purpose: use TypeSafe's Jev to classify GitHub starred repositories into user-defined Star Lists, allowing multiple lists per repository.
+- Current scope: classification previews only, with no writes to GitHub Star Lists. SQLite persistence is deferred.
 - The `scripts/` directory contains earlier experiments. Leave its contents unchanged unless the user explicitly asks to modify them.
 
 ### Project Map
@@ -36,5 +38,6 @@
 | Server entry and Hono integration | `src/server.ts` |
 | Hono API routes, including `GET /api/health` | `src/server/api.ts` |
 | Build, dependencies, and TypeScript configuration | `vite.config.ts`, `package.json`, `pnpm-lock.yaml`, `tsconfig.json` |
+| Official TypeSafe/Jev SDK dependency | `@typesafe-ai/sdk` in `package.json`, pinned in `pnpm-lock.yaml` |
 | GitHub Star List experiments | `scripts/` |
 | Project-local agent skills and source records | `.agents/skills/`, `skills-lock.json` |
