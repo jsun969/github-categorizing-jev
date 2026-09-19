@@ -33,6 +33,7 @@
 
 | Feature / Concern | Location |
 | --- | --- |
+| Project purpose, preview-only scope, and local setup | `README.md` |
 | Home page and API connectivity check | `src/routes/index.tsx` |
 | Root document and shared styles | `src/routes/__root.tsx`, `src/styles.css` |
 | TanStack Router setup | `src/router.tsx`; `src/routeTree.gen.ts` is generated |
