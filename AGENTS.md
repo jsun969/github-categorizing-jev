@@ -38,7 +38,8 @@
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | Project purpose, preview-only scope, and local setup                    | `README.md`                                                                                               |
 | Compact Workspace toolbar, native HeroUI matrix, selection, and jobs    | `src/routes/index.tsx`, `src/components/workspace/`                                                       |
-| Compact token form and confirmed category JSON replacement              | `src/routes/settings.tsx`, `src/routes/categories.tsx`                                                    |
+| Token settings, manual category CRUD, and confirmed JSON replacement    | `src/routes/settings.tsx`, `src/routes/categories.tsx`                                                    |
+| Atomic category mutations, shared validation, and preview invalidation  | `src/server/api.ts`, `src/server/store.ts`                                                                |
 | Root document and shared styles                                         | `src/routes/__root.tsx`, `src/styles.css`                                                                 |
 | HeroUI navigation and shared API contracts                              | `src/components/app-shell.tsx`, `src/components/app-link.tsx`, `src/lib/contracts.ts`, `src/lib/api.ts`   |
 | TanStack Router setup                                                   | `src/router.tsx`; `src/routeTree.gen.ts` is generated                                                     |

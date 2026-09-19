@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import type { CategoryInput } from "../lib/contracts";
 import classificationRoutes from "./classification-routes";
 import { ApiError, objectBody, positiveInteger } from "./errors";
 import githubRoutes from "./github-routes";
@@ -99,29 +98,31 @@ api.put("/categories", async (context) => {
   assertIdle();
   if (!Array.isArray(body.categories))
     throw new ApiError(400, "Categories must be a JSON array.");
-  const names = new Set<string>();
-  const categories: CategoryInput[] = body.categories.map((value: unknown) => {
-    const category = objectBody(value);
-    if (
-      typeof category.name !== "string" ||
-      typeof category.description !== "string"
-    ) {
-      throw new ApiError(400, "Each category needs a name and a description.");
-    }
-    const name = category.name.trim();
-    const description = category.description.trim();
-    if (!name || !description)
-      throw new ApiError(
-        400,
-        "Category names and descriptions must not be empty.",
-      );
-    const key = name.toLowerCase();
-    if (names.has(key))
-      throw new ApiError(400, `Category names must be unique: ${name}.`);
-    names.add(key);
-    return { name, description };
+  return context.json({
+    categories: getStore().replaceCategories(body.categories),
   });
-  return context.json({ categories: getStore().replaceCategories(categories) });
+});
+
+api.post("/categories", async (context) => {
+  const body = objectBody(await context.req.json());
+  assertIdle();
+  return context.json({ categories: getStore().createCategory(body) }, 201);
+});
+
+api.put("/categories/:id", async (context) => {
+  const body = objectBody(await context.req.json());
+  assertIdle();
+  return context.json({
+    categories: getStore().updateCategory(context.req.param("id"), body),
+  });
+});
+
+api.delete("/categories/:id", async (context) => {
+  objectBody(await context.req.json());
+  assertIdle();
+  return context.json({
+    categories: getStore().deleteCategory(context.req.param("id")),
+  });
 });
 
 api.get("/workspace", (context) => {

@@ -16,7 +16,7 @@ import type {
   RepositoryPage,
   SettingsStatus,
 } from "../lib/contracts";
-import { ApiError } from "./errors";
+import { ApiError, objectBody } from "./errors";
 
 export class Store {
   private readonly database: DatabaseSync;
@@ -207,21 +207,84 @@ export class Store {
   }
 
   replaceCategories(inputs: CategoryInput[]): Category[] {
-    const categories = inputs.map((input) => ({ ...input, id: randomUUID() }));
-    this.database.exec("BEGIN IMMEDIATE");
-    try {
+    const names = new Set<string>();
+    const categories = inputs.map((input) => categoryInput(input, names));
+    return this.mutateCategories(() => {
       this.database.prepare("DELETE FROM categories").run();
       const insert = this.database.prepare(
         "INSERT INTO categories VALUES (?, ?, ?, ?)",
       );
       categories.forEach((category, position) =>
-        insert.run(category.id, category.name, category.description, position),
+        insert.run(randomUUID(), category.name, category.description, position),
       );
+      return true;
+    });
+  }
+
+  createCategory(input: unknown): Category[] {
+    return this.mutateCategories(() => {
+      const category = categoryInput(input, this.categoryNames());
       this.database
         .prepare(
-          "UPDATE metadata SET value = CAST(value AS INTEGER) + 1 WHERE key = 'category_revision'",
+          `INSERT INTO categories (id, name, description, position)
+           VALUES (?, ?, ?, (SELECT COALESCE(MAX(position), -1) + 1 FROM categories))`,
         )
-        .run();
+        .run(randomUUID(), category.name, category.description);
+      return true;
+    });
+  }
+
+  updateCategory(id: string, input: unknown): Category[] {
+    return this.mutateCategories(() => {
+      const current = this.database
+        .prepare("SELECT name, description FROM categories WHERE id = ?")
+        .get(id);
+      if (!current) throw new ApiError(404, "The category was not found.");
+      const category = categoryInput(input, this.categoryNames(id));
+      if (
+        current.name === category.name &&
+        current.description === category.description
+      )
+        return false;
+      this.database
+        .prepare("UPDATE categories SET name = ?, description = ? WHERE id = ?")
+        .run(category.name, category.description, id);
+      return true;
+    });
+  }
+
+  deleteCategory(id: string): Category[] {
+    return this.mutateCategories(() => {
+      const result = this.database
+        .prepare("DELETE FROM categories WHERE id = ?")
+        .run(id);
+      if (result.changes === 0)
+        throw new ApiError(404, "The category was not found.");
+      return true;
+    });
+  }
+
+  private categoryNames(excludedId?: string): Set<string> {
+    const names = new Set<string>();
+    for (const row of this.database
+      .prepare("SELECT id, name FROM categories")
+      .iterate()) {
+      if (row.id !== excludedId) names.add(String(row.name).toLowerCase());
+    }
+    return names;
+  }
+
+  private mutateCategories(change: () => boolean): Category[] {
+    this.database.exec("BEGIN IMMEDIATE");
+    try {
+      if (change()) {
+        this.database
+          .prepare(
+            "UPDATE metadata SET value = CAST(value AS INTEGER) + 1 WHERE key = 'category_revision'",
+          )
+          .run();
+      }
+      const categories = this.getCategories();
       this.database.exec("COMMIT");
       return categories;
     } catch (error) {
@@ -380,6 +443,28 @@ export class Store {
   close(): void {
     this.database.close();
   }
+}
+
+function categoryInput(value: unknown, names: Set<string>): CategoryInput {
+  const category = objectBody(value);
+  if (
+    typeof category.name !== "string" ||
+    typeof category.description !== "string"
+  ) {
+    throw new ApiError(400, "Each category needs a name and a description.");
+  }
+  const name = category.name.trim();
+  const description = category.description.trim();
+  if (!name || !description)
+    throw new ApiError(
+      400,
+      "Category names and descriptions must not be empty.",
+    );
+  const key = name.toLowerCase();
+  if (names.has(key))
+    throw new ApiError(400, `Category names must be unique: ${name}.`);
+  names.add(key);
+  return { name, description };
 }
 
 const stores = globalThis as typeof globalThis & { starOrganizerStore?: Store };

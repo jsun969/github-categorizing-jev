@@ -40,7 +40,15 @@ Loading, refreshing, and classification run as background jobs. Only one job run
 
 Categories need only a `name` and a `description`. Explain what belongs in a category, and include exclusions when the boundary matters.
 
-Paste a JSON array into the editor:
+Manage individual categories directly in the saved list:
+
+- **New category** opens a name-and-description form.
+- **Edit** updates one category without replacing its ID or other categories.
+- **Delete** removes one category after explicit confirmation; Cancel leaves it unchanged.
+
+Names must be unique regardless of letter case. Successful additions, edits, and deletions invalidate previous classification previews; saving an unchanged category does not. All category mutations are blocked while a background job is running. Manual changes preserve any unsaved JSON draft and clear its replacement confirmation.
+
+For bulk replacement, paste a JSON array into the editor:
 
 ```json
 [
@@ -129,7 +137,7 @@ All UI controls use HeroUI components and the default theme. Tailwind utilities 
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `src/routes/index.tsx`, `src/components/workspace/`                                    | Workspace controls, cached repository table, probability bars, selection, and job polling.        |
 | `src/routes/settings.tsx`                                                              | Server-side token configuration.                                                                  |
-| `src/routes/categories.tsx`                                                            | Category JSON validation and confirmed replacement.                                               |
+| `src/routes/categories.tsx`                                                            | Manual category creation, editing, deletion, and confirmed JSON replacement.                      |
 | `src/routes/__root.tsx`, `src/components/app-shell.tsx`, `src/components/app-link.tsx` | Root document and HeroUI navigation.                                                              |
 | `src/lib/contracts.ts`, `src/lib/api.ts`                                               | Shared API types and browser request helper.                                                      |
 | `src/server.ts`, `src/server/api.ts`                                                   | TanStack/Hono integration, local API boundary, settings, categories, cache reads, and job status. |
