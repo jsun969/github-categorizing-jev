@@ -17,3 +17,7 @@
 - Package manager: `pnpm`.
 - Stack: TypeScript, React, TanStack Start, Hono, and HeroUI.
 - The `scripts/` directory contains earlier experiments. Leave its contents unchanged unless the user explicitly asks to modify them.
+
+## Skills
+
+- Use `.agents/skills/typesafe-ai/SKILL.md` when designing or implementing this project's TypeSafe/Jev-powered AI features. Read the relevant live TypeSafe documentation before writing or changing integrations.
