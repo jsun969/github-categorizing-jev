@@ -200,8 +200,7 @@ function CategoriesPage() {
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">Categories</h1>
         <p className="text-sm text-muted">
-          Define what each category means. Every classification uses all saved
-          categories.
+          All saved categories apply to every classification.
         </p>
       </header>
 
@@ -222,7 +221,7 @@ function CategoriesPage() {
             <Card.Description>
               {categories === null
                 ? "Not loaded"
-                : `${categories.length} saved`}
+                : `${categories.length} saved locally`}
             </Card.Description>
           </Card.Header>
           <Card.Content>
@@ -247,15 +246,11 @@ function CategoriesPage() {
                 </Button>
               </div>
             ) : categories?.length === 0 ? (
-              <div className="space-y-3 py-6">
+              <div className="space-y-2">
                 <h3 className="font-semibold">No categories yet</h3>
                 <p className="text-sm text-muted">
-                  Paste your category definitions into the JSON editor, then
-                  confirm the replacement to save them.
-                </p>
-                <p className="text-sm text-muted">
-                  Add at least one category before starting a classification in
-                  Workspace.
+                  Add categories with the JSON editor to start classifying
+                  repositories.
                 </p>
               </div>
             ) : (
@@ -269,12 +264,6 @@ function CategoriesPage() {
               </ul>
             )}
           </Card.Content>
-          <Card.Footer>
-            <p className="text-sm text-muted">
-              Categories are saved locally. There is no individual category
-              selection: all categories apply to every classification.
-            </p>
-          </Card.Footer>
         </Card>
 
         <form
@@ -284,20 +273,29 @@ function CategoriesPage() {
           aria-busy={saving}
         >
           <Card>
-            <Card.Header>
-              <Card.Title
-                id="replace-categories-heading"
-                render={(props) => <h2 {...props} />}
+            <Card.Header className="flex-row flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1">
+                <Card.Title
+                  id="replace-categories-heading"
+                  render={(props) => <h2 {...props} />}
+                >
+                  Replace from JSON
+                </Card.Title>
+                <Card.Description>
+                  Replaces all categories and invalidates existing previews.
+                </Card.Description>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                isDisabled={saving}
+                onPress={() => changeSource(categoryExample)}
               >
-                Replace from JSON
-              </Card.Title>
-              <Card.Description>
-                This replaces the entire collection; it never merges categories.
-                Replacement invalidates old classification previews and does not
-                write to GitHub Star Lists.
-              </Card.Description>
+                Insert example
+              </Button>
             </Card.Header>
-            <Card.Content className="flex flex-col gap-6">
+            <Card.Content className="flex flex-col gap-4">
               <TextField
                 name="categories-json"
                 value={source}
@@ -307,10 +305,10 @@ function CategoriesPage() {
                 validationBehavior="aria"
                 fullWidth
               >
-                <Label>Category definitions</Label>
+                <Label>Category definitions (JSON)</Label>
                 <TextArea
                   className="font-mono"
-                  rows={12}
+                  rows={10}
                   fullWidth
                   spellCheck={false}
                   autoCapitalize="off"
@@ -325,81 +323,21 @@ function CategoriesPage() {
                 <FieldError>{parsed.error}</FieldError>
               </TextField>
 
-              <div className="space-y-2" aria-live="polite">
-                <div className="flex flex-wrap items-center gap-4 text-sm">
-                  <span>
-                    Existing:{" "}
-                    <strong>
-                      {categories === null ? "Not loaded" : categories.length}
-                    </strong>
-                  </span>
-                  <span>
-                    Parsed: <strong>{replacementCount ?? "—"}</strong>
-                  </span>
-                  {parsed.categories !== null ? <span>Valid JSON</span> : null}
-                </div>
-                {!source.trim() ? (
-                  <p className="text-sm text-muted">
-                    Paste a JSON array to validate the replacement before
-                    saving.
-                  </p>
-                ) : null}
+              <div
+                className="flex flex-wrap items-center gap-4 text-sm"
+                aria-live="polite"
+              >
+                <span>
+                  Existing:{" "}
+                  <strong>
+                    {categories === null ? "Not loaded" : categories.length}
+                  </strong>
+                </span>
+                <span>
+                  Parsed: <strong>{replacementCount ?? "—"}</strong>
+                </span>
+                {parsed.categories !== null ? <span>Valid JSON</span> : null}
               </div>
-
-              <div className="flex flex-col items-start gap-3">
-                <h3 className="text-sm font-semibold">JSON example</h3>
-                <pre className="max-w-full whitespace-pre-wrap wrap-anywhere font-mono text-sm">
-                  <code>{categoryExample}</code>
-                </pre>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  isDisabled={saving}
-                  onPress={() => changeSource(categoryExample)}
-                >
-                  Paste example into editor
-                </Button>
-                <p className="text-sm text-muted">
-                  Example only. Nothing is saved automatically.
-                </p>
-              </div>
-
-              {parsed.categories !== null && categories !== null ? (
-                <div className="flex flex-col gap-4">
-                  <Alert status="warning">
-                    <Alert.Indicator />
-                    <Alert.Content>
-                      <Alert.Title>
-                        {replacementCount === 0
-                          ? "Clear all categories?"
-                          : "Replace all categories?"}
-                      </Alert.Title>
-                      <Alert.Description>
-                        {replacementCount === 0
-                          ? `This removes all ${categories.length} saved categories. Classification cannot start until you add categories again.`
-                          : `This replaces all ${categories.length} saved categories with ${replacementCount} from this JSON.`}{" "}
-                        Old classification previews will no longer be current.
-                      </Alert.Description>
-                    </Alert.Content>
-                  </Alert>
-                  <Checkbox
-                    isSelected={confirmed}
-                    onChange={setConfirmed}
-                    isDisabled={saving || loading}
-                  >
-                    <Checkbox.Content>
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Label>
-                        {replacementCount === 0
-                          ? "I confirm that I want to clear all saved categories."
-                          : "I confirm that I want to replace the entire saved collection."}
-                      </Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                </div>
-              ) : null}
 
               {saveError ? (
                 <Alert status="danger" role="alert">
@@ -423,7 +361,29 @@ function CategoriesPage() {
                 </Alert>
               ) : null}
             </Card.Content>
-            <Card.Footer className="flex-wrap gap-3">
+            <Card.Footer className="flex-col items-start gap-3">
+              {parsed.categories !== null && categories !== null ? (
+                <Checkbox
+                  isSelected={confirmed}
+                  onChange={setConfirmed}
+                  isDisabled={saving || loading}
+                >
+                  <Checkbox.Content>
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    {replacementCount === 0
+                      ? `I confirm clearing all ${categories.length} saved categories.`
+                      : `I confirm replacing all ${categories.length} saved categories with ${replacementCount} from this JSON.`}
+                  </Checkbox.Content>
+                  {replacementCount === 0 ? (
+                    <Description>
+                      Classification cannot start until you add categories
+                      again.
+                    </Description>
+                  ) : null}
+                </Checkbox>
+              ) : null}
               <Button
                 type="submit"
                 variant="danger"
@@ -436,11 +396,11 @@ function CategoriesPage() {
                     ? "Clear all categories"
                     : "Replace all categories"}
               </Button>
-              <p className="text-sm text-muted">
-                {categories === null
-                  ? "Load saved categories before replacing them."
-                  : "Confirmation is required for every replacement."}
-              </p>
+              {categories === null ? (
+                <p className="text-sm text-muted">
+                  Load saved categories before replacing them.
+                </p>
+              ) : null}
             </Card.Footer>
           </Card>
         </form>

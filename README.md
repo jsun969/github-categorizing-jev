@@ -28,8 +28,9 @@ A Load run accepts up to 1,000 repositories. GitHub pages contain at most 100, s
 
 - **Batch size** is the maximum number of repositories in one Jev request, not the number of concurrent requests. Requests run sequentially.
 - The actual batch can be smaller to fit the model's input limits.
-- If a single README is too large for inference, the request uses an explicitly marked excerpt. The full README stays in SQLite, and the result is labeled **Input truncated**.
+- If a single README is too large for inference, the request uses an explicitly marked excerpt. The full README stays in SQLite, and the current result is labeled **Excerpt**.
 - Results appear in a table: one repository per row, one category per column, with a HeroUI probability bar and percentage in each cell.
+- The compact table uses native HeroUI row styling and horizontal scrolling. Percentages show up to one decimal place; hover or focus a repository description for its metadata and timestamps.
 - Missing, stale, or failed results are not displayed as `0%`.
 - Search and table pagination operate on the local cache. Selection is retained across local pages; successful Load results are selected automatically.
 

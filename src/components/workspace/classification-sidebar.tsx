@@ -9,6 +9,7 @@ import {
   Label,
   NumberField,
   ProgressBar,
+  Separator,
 } from "@heroui/react";
 import type { Job, JobKind } from "../../lib/contracts";
 import { AppLink } from "../app-link";
@@ -76,28 +77,24 @@ export function ClassificationSidebar({
           >
             Classification
           </Card.Title>
-          <Card.Description>
-            Evaluate selected repositories against every category.
-          </Card.Description>
         </Card.Header>
-        <Card.Content className="flex flex-col gap-5">
-          <dl className="space-y-3 text-sm">
+        <Card.Content className="flex flex-col gap-4">
+          <dl className="space-y-2 text-sm">
             <div className="flex items-center justify-between gap-3">
               <dt>Selected repositories</dt>
-              <dd className="font-mono tabular-nums" aria-live="polite">
+              <dd className="tabular-nums" aria-live="polite">
                 {selectedCount.toLocaleString("en-US")}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-3">
               <dt>All categories</dt>
-              <dd className="font-mono tabular-nums">
+              <dd className="tabular-nums">
                 {categoryCount === null
                   ? "--"
                   : categoryCount.toLocaleString("en-US")}
               </dd>
             </div>
           </dl>
-
           <Form
             className="flex flex-col gap-4"
             onSubmit={(event) => {
@@ -124,71 +121,55 @@ export function ClassificationSidebar({
                 <NumberField.IncrementButton aria-label="Increase batch size" />
               </NumberField.Group>
               <Description>
-                Maximum repositories per request, not concurrency. Requests run
-                sequentially; large inputs may use smaller batches.
+                Repositories per request, not concurrency. Large inputs may use
+                smaller batches.
               </Description>
               <FieldError>Enter a whole number from 1 to 1,000.</FieldError>
             </NumberField>
             <Button
               type="submit"
+              className="w-full"
               isDisabled={!canStart}
               isPending={starting || classifying}
             >
               {starting ? "Starting…" : classifying ? "Classifying…" : "Start"}
             </Button>
           </Form>
-
           {isReady && !jevConfigured ? (
-            <Alert status="warning">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>Jev token required</Alert.Title>
-                <Alert.Description>
-                  <AppLink to="/settings">Open Settings</AppLink> to save your
-                  Jev token before classification.
-                </Alert.Description>
-              </Alert.Content>
-            </Alert>
-          ) : null}
-          {categoryCount === 0 ? (
-            <Alert status="warning">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>No categories yet</Alert.Title>
-                <Alert.Description>
-                  <AppLink to="/categories">Open Categories</AppLink> to define
-                  the categories used by every classification request.
-                </Alert.Description>
-              </Alert.Content>
-            </Alert>
-          ) : null}
-          {isReady && !profileKnown ? (
-            <p className="text-sm text-muted">
-              Load your GitHub account before classification. Check the
-              connection in <AppLink to="/settings">Settings</AppLink>.
+            <p className="text-sm">
+              <AppLink to="/settings">Configure a Jev token</AppLink> to
+              classify.
             </p>
           ) : null}
-          {selectedCount === 0 ? (
-            <p className="text-sm text-muted">
-              Select saved repositories in the table, or load repositories to
-              select them automatically.
+          {categoryCount === 0 ? (
+            <p className="text-sm">
+              <AppLink to="/categories">Add categories</AppLink> before
+              starting.
+            </p>
+          ) : null}
+          {isReady && !profileKnown && jevConfigured ? (
+            <p className="text-xs text-muted">
+              Load your GitHub account first.
+            </p>
+          ) : null}
+          {isReady &&
+          profileKnown &&
+          jevConfigured &&
+          (categoryCount ?? 0) > 0 &&
+          selectedCount === 0 ? (
+            <p className="text-xs text-muted">
+              Select repositories in the table.
             </p>
           ) : null}
           {selectedCount > 1000 ? (
             <Alert status="warning">
               <Alert.Indicator />
               <Alert.Content>
-                <Alert.Title>
-                  Select at most 1,000 repositories per job.
-                </Alert.Title>
+                <Alert.Description>
+                  Select at most 1,000 repositories per run.
+                </Alert.Description>
               </Alert.Content>
             </Alert>
-          ) : null}
-          {running ? (
-            <p className="text-xs text-muted">
-              Another operation cannot start until this job finishes. Selection
-              changes apply to the next run.
-            </p>
           ) : null}
 
           {job ? (
@@ -196,11 +177,9 @@ export function ClassificationSidebar({
               aria-labelledby="workspace-job-heading"
               className="flex flex-col gap-3"
             >
+              <Separator />
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h3
-                  id="workspace-job-heading"
-                  className="text-sm font-semibold"
-                >
+                <h3 id="workspace-job-heading" className="text-sm font-medium">
                   {jobLabels[job.kind]}
                 </h3>
                 <Chip
@@ -220,7 +199,7 @@ export function ClassificationSidebar({
                     : job.status === "failed"
                       ? "Failed"
                       : job.failed > 0
-                        ? "Finished with errors"
+                        ? "Partial"
                         : "Completed"}
                 </Chip>
               </div>
@@ -240,25 +219,22 @@ export function ClassificationSidebar({
                   <ProgressBar.Fill />
                 </ProgressBar.Track>
               </ProgressBar>
-              <p className="text-xs text-muted">
-                {job.completed.toLocaleString("en-US")} succeeded ·{" "}
-                {job.failed.toLocaleString("en-US")} failed
-              </p>
               <p
-                className="text-sm break-words"
+                className="text-xs text-muted break-words"
                 role="status"
                 aria-live="polite"
               >
-                {job.message}
+                {running || job.status === "failed"
+                  ? job.message
+                  : `${job.completed} completed${job.failed ? `, ${job.failed} failed` : ""}.`}
               </p>
               {pollError ? (
                 <Alert status="warning">
                   <Alert.Indicator />
                   <Alert.Content>
-                    <Alert.Title>Job updates interrupted</Alert.Title>
+                    <Alert.Title>Updates interrupted</Alert.Title>
                     <Alert.Description>
-                      {pollError} Polling will retry automatically. The last
-                      known progress is shown.
+                      {pollError} Retrying automatically.
                     </Alert.Description>
                   </Alert.Content>
                 </Alert>
@@ -272,13 +248,13 @@ export function ClassificationSidebar({
                       role="region"
                       aria-label="Repository error details"
                       tabIndex={0}
-                      className="mt-2 max-h-52 overflow-y-auto"
+                      className="mt-2 max-h-40 overflow-y-auto"
                     >
-                      <ul className="space-y-3 text-xs">
+                      <ul className="space-y-2 text-xs">
                         {job.errors.map((failure, index) => (
                           <li
                             key={`${failure.repository}-${index}`}
-                            className="space-y-1 break-words"
+                            className="break-words"
                           >
                             <p className="font-medium">{failure.repository}</p>
                             <p>{failure.message}</p>
@@ -289,20 +265,9 @@ export function ClassificationSidebar({
                   </Alert.Content>
                 </Alert>
               ) : null}
-              {job.completed > 0 ? (
-                <p className="text-xs text-muted">
-                  Successful repositories are saved locally, even if another
-                  repository fails.
-                </p>
-              ) : null}
             </section>
           ) : null}
         </Card.Content>
-        <Card.Footer>
-          <p className="text-xs text-muted">
-            Preview only. Classification never writes to GitHub Star Lists.
-          </p>
-        </Card.Footer>
       </Card>
     </aside>
   );

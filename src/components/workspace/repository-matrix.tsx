@@ -3,8 +3,8 @@ import {
   Chip,
   Link,
   ProgressBar,
-  Surface,
   Table,
+  Tooltip,
 } from "@heroui/react";
 import type { Selection } from "@heroui/react";
 import { memo, useMemo } from "react";
@@ -12,7 +12,7 @@ import type { Category, Job, RepositoryRow } from "../../lib/contracts";
 
 const probabilityFormat: Intl.NumberFormatOptions = {
   style: "percent",
-  maximumSignificantDigits: 21,
+  maximumFractionDigits: 1,
 };
 const dateFormat = new Intl.DateTimeFormat("en", {
   dateStyle: "medium",
@@ -62,10 +62,10 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
 
   return (
     <Table aria-busy={isLoading}>
-      <Table.ScrollContainer className="max-h-[65vh] overflow-auto">
+      <Table.ScrollContainer className="max-h-[70vh] overflow-auto">
         <Table.Content
           aria-label="Saved repositories and category probabilities"
-          className="w-max table-fixed"
+          className="min-w-full"
           selectionMode="multiple"
           selectedKeys={pageSelection}
           onSelectionChange={onSelectionChange}
@@ -74,18 +74,8 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
           }
           disabledBehavior="selection"
         >
-          <Table.Header className="sticky top-0 z-30">
-            <Table.Column
-              id="selection"
-              className="sticky left-0 z-20 w-10 min-w-10 max-w-10 px-2 sm:w-12 sm:min-w-12 sm:max-w-12"
-            >
-              <Surface
-                aria-hidden="true"
-                variant="secondary"
-                className="absolute inset-0 -z-10"
-              >
-                {null}
-              </Surface>
+          <Table.Header className="sticky top-0 z-10">
+            <Table.Column id="selection" className="w-12 pe-0">
               <Checkbox
                 aria-label="Select all repositories on this page"
                 slot="selection"
@@ -98,57 +88,49 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                 </Checkbox.Content>
               </Checkbox>
             </Table.Column>
-            <Table.Column
-              id="repository"
-              isRowHeader
-              className="sticky left-10 z-20 w-28 min-w-28 max-w-28 px-2 sm:left-12 sm:w-72 sm:min-w-72 sm:max-w-72 sm:px-4"
-            >
-              <Surface
-                aria-hidden="true"
-                variant="secondary"
-                className="absolute inset-0 -z-10"
-              >
-                {null}
-              </Surface>
+            <Table.Column id="repository" isRowHeader className="min-w-56">
               Repository
             </Table.Column>
             {categories.map((category) => (
               <Table.Column
                 key={category.id}
                 id={category.id}
-                className="w-32 min-w-32 max-w-32 sm:w-44 sm:min-w-44 sm:max-w-44"
+                className="min-w-36"
               >
-                <div className="space-y-1" title={category.description}>
-                  <span className="block text-sm font-semibold break-words">
+                <Tooltip>
+                  <Tooltip.Trigger
+                    tabIndex={0}
+                    className="inline-block max-w-40 truncate"
+                  >
                     {category.name}
-                  </span>
-                  <span className="line-clamp-2 text-xs font-normal">
+                  </Tooltip.Trigger>
+                  <Tooltip.Content className="max-w-xs">
                     {category.description}
-                  </span>
-                </div>
+                  </Tooltip.Content>
+                </Tooltip>
               </Table.Column>
             ))}
           </Table.Header>
           <Table.Body
             renderEmptyState={() => (
-              <div className="space-y-2 px-4 py-12 text-center" role="status">
-                <p className="text-sm font-medium">
+              <div className="space-y-2 px-6 py-16 text-center" role="status">
+                <p className="font-medium">
                   {isLoading
-                    ? "Reading saved repositories…"
+                    ? "Loading repositories…"
                     : hasError
-                      ? "Saved repositories are unavailable."
+                      ? "Could not load repositories"
                       : isSearching
-                        ? "No saved repositories match your search."
-                        : "No repositories saved yet."}
+                        ? "No matching repositories"
+                        : "No repositories loaded"}
                 </p>
                 <p className="text-sm text-muted">
                   {isLoading
-                    ? "Opening your local cache."
+                    ? "Reading your local cache."
                     : hasError
-                      ? "Retry the cache request to continue."
+                      ? "Retry the cache request above."
                       : isSearching
-                        ? "Try another owner or repository name. Search only uses the local cache."
-                        : "Use Load to save starred repositories and their READMEs. Classification starts only when you choose Start."}
+                        ? "Try another owner or repository name."
+                        : "Choose a source and click Load to get started."}
                 </p>
               </div>
             )}
@@ -160,22 +142,15 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
               const unavailable = failure
                 ? `Classification failed: ${failure}`
                 : repository.classificationStatus === "stale"
-                  ? "Stale result: repository content or categories changed. Classify again."
-                  : "No current classification result.";
-
+                  ? "Outdated result. Classify again."
+                  : "Not classified yet.";
               return (
                 <Table.Row
                   key={repository.id}
                   id={repository.id}
                   textValue={repository.fullName}
                 >
-                  <Table.Cell className="sticky left-0 z-10 w-10 min-w-10 max-w-10 px-2 sm:w-12 sm:min-w-12 sm:max-w-12">
-                    <Surface
-                      aria-hidden="true"
-                      className="absolute inset-0 -z-10"
-                    >
-                      {null}
-                    </Surface>
+                  <Table.Cell className="w-12 pe-0">
                     <Checkbox
                       aria-label={`Select ${repository.fullName}`}
                       slot="selection"
@@ -187,92 +162,83 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                       </Checkbox.Content>
                     </Checkbox>
                   </Table.Cell>
-                  <Table.Cell className="sticky left-10 z-10 w-28 min-w-28 max-w-28 px-2 sm:left-12 sm:w-72 sm:min-w-72 sm:max-w-72 sm:px-4">
-                    <Surface
-                      aria-hidden="true"
-                      className="absolute inset-0 -z-10"
-                    >
-                      {null}
-                    </Surface>
-                    <div className="space-y-2 whitespace-normal">
-                      <Link
-                        href={repository.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`${repository.fullName} on GitHub (opens in a new tab)`}
-                        className="max-w-full text-sm font-medium break-all"
-                      >
-                        {repository.fullName}
-                      </Link>
-                      {repository.description ? (
-                        <p
-                          className="line-clamp-2 text-xs text-muted"
-                          title={repository.description}
+                  <Table.Cell>
+                    <div className="min-w-48 max-w-80 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={repository.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={`${repository.fullName} on GitHub (opens in a new tab)`}
+                          className="min-w-0 truncate font-medium"
                         >
-                          {repository.description}
-                        </p>
-                      ) : null}
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {repository.language ? (
-                          <span className="text-xs text-muted">
-                            {repository.language}
-                          </span>
+                          {repository.fullName}
+                        </Link>
+                        {failure ? (
+                          <Chip size="sm" color="danger" title={failure}>
+                            Error
+                          </Chip>
+                        ) : repository.classificationStatus === "stale" ? (
+                          <Chip
+                            size="sm"
+                            color="warning"
+                            title="Content or categories changed. Classify again."
+                          >
+                            Stale
+                          </Chip>
                         ) : null}
                         {repository.archived ? (
                           <Chip size="sm">Archived</Chip>
                         ) : null}
-                        {!repository.hasReadme ? (
-                          <Chip size="sm">No README</Chip>
-                        ) : null}
-                        {failure ? (
-                          <Chip color="danger" size="sm" title={failure}>
-                            Error
-                          </Chip>
-                        ) : null}
-                        {!failure &&
-                        repository.classificationStatus === "stale" ? (
-                          <Chip color="warning" size="sm">
-                            Stale
-                          </Chip>
-                        ) : null}
-                        {!failure &&
-                        repository.classificationStatus === "none" ? (
-                          <Chip size="sm">Not classified</Chip>
-                        ) : null}
-                        {repository.inputTruncated ? (
+                        {repository.inputTruncated &&
+                        repository.classificationStatus === "current" ? (
                           <Chip
                             size="sm"
                             color="warning"
-                            title="The classification used a README excerpt. The full README remains saved."
+                            title="Jev used a README excerpt; the full README remains saved."
                           >
-                            Input truncated
+                            Excerpt
                           </Chip>
                         ) : null}
                       </div>
-                      {repository.classificationStatus === "stale" ? (
-                        <p className="text-xs text-muted">
-                          Repository content or categories changed. Classify
-                          again.
-                        </p>
-                      ) : null}
-                      <p className="text-xs text-muted">
-                        Saved{" "}
-                        <time dateTime={repository.fetchedAt}>
-                          {dateFormat.format(new Date(repository.fetchedAt))}
-                        </time>
-                      </p>
-                      {repository.classifiedAt ? (
-                        <p className="text-xs text-muted">
-                          {repository.classificationStatus === "stale"
-                            ? "Previous result"
-                            : "Classified"}{" "}
-                          <time dateTime={repository.classifiedAt}>
-                            {dateFormat.format(
-                              new Date(repository.classifiedAt),
-                            )}
-                          </time>
-                        </p>
-                      ) : null}
+                      <Tooltip>
+                        <Tooltip.Trigger
+                          aria-label={`Details for ${repository.fullName}`}
+                          className="max-w-full truncate text-xs text-muted"
+                        >
+                          {repository.description || "No description"}
+                        </Tooltip.Trigger>
+                        <Tooltip.Content className="max-w-sm space-y-1">
+                          <p className="font-medium">{repository.fullName}</p>
+                          {repository.description ? (
+                            <p>{repository.description}</p>
+                          ) : null}
+                          {repository.language ? (
+                            <p>{repository.language}</p>
+                          ) : null}
+                          {!repository.hasReadme ? (
+                            <p>No README available.</p>
+                          ) : null}
+                          <p>
+                            Updated{" "}
+                            {dateFormat.format(new Date(repository.fetchedAt))}
+                          </p>
+                          {repository.classifiedAt ? (
+                            <p>
+                              Classified{" "}
+                              {dateFormat.format(
+                                new Date(repository.classifiedAt),
+                              )}
+                            </p>
+                          ) : null}
+                          {repository.inputTruncated ? (
+                            <p>
+                              The last classification used a README excerpt. The
+                              full README is saved.
+                            </p>
+                          ) : null}
+                        </Tooltip.Content>
+                      </Tooltip>
                     </div>
                   </Table.Cell>
                   {categories.map((category) => {
@@ -286,10 +252,7 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                       probability >= 0 &&
                       probability <= 1;
                     return (
-                      <Table.Cell
-                        key={category.id}
-                        className="w-32 min-w-32 max-w-32 sm:w-44 sm:min-w-44 sm:max-w-44"
-                      >
+                      <Table.Cell key={category.id}>
                         {valid ? (
                           <ProgressBar
                             aria-label={`${repository.fullName}: ${category.name} probability`}
@@ -298,15 +261,16 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                             value={probability}
                             size="sm"
                             formatOptions={probabilityFormat}
+                            className="flex min-w-28 flex-row items-center gap-3"
                           >
-                            <ProgressBar.Output className="font-mono text-xs tabular-nums break-all" />
-                            <ProgressBar.Track>
+                            <ProgressBar.Track className="min-w-0 flex-1">
                               <ProgressBar.Fill />
                             </ProgressBar.Track>
+                            <ProgressBar.Output className="w-12 shrink-0 text-right text-xs tabular-nums" />
                           </ProgressBar>
                         ) : (
                           <span
-                            className="font-mono text-sm text-muted"
+                            className="text-sm text-muted"
                             aria-label={`${category.name}: ${unavailable}`}
                             title={unavailable}
                           >

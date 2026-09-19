@@ -1,7 +1,6 @@
 import {
   Alert,
   Button,
-  Card,
   Description,
   FieldError,
   Form,
@@ -162,35 +161,28 @@ function WorkspacePage() {
   }
 
   return (
-    <div className="flex min-w-0 flex-col gap-6">
-      <header className="flex flex-wrap items-start justify-between gap-5">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold tracking-tight">Workspace</h1>
-          <p className="text-sm text-muted">
-            Browse your saved stars. Load deliberately, then classify what you
-            select.
-          </p>
-        </div>
-        <div className="space-y-1 sm:text-right" aria-live="polite">
-          <p className="text-sm text-muted">Total stars</p>
-          <p className="font-mono text-3xl font-semibold tabular-nums">
-            {profile ? profile.totalStars.toLocaleString("en-US") : "--"}
-          </p>
-          <p className="text-xs text-muted">
+    <div className="flex min-w-0 flex-col gap-5">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-semibold">Workspace</h1>
+        <div
+          className="flex items-baseline gap-2"
+          aria-live="polite"
+          title={
+            profile
+              ? `GitHub account: ${profile.login}. Updated ${new Date(profile.fetchedAt).toLocaleString("en-US")}.`
+              : undefined
+          }
+        >
+          <span className="text-sm text-muted">
             {isOverviewLoading
-              ? "Checking GitHub total…"
-              : profile
-                ? `${overviewError ? "Cached total · " : ""}@${profile.login}`
-                : "Connect GitHub to read your total."}
-          </p>
-          {profile ? (
-            <p className="text-xs text-muted">
-              Checked{" "}
-              <time dateTime={profile.fetchedAt}>
-                {new Date(profile.fetchedAt).toLocaleString("en-US")}
-              </time>
-            </p>
-          ) : null}
+              ? "Checking stars…"
+              : overviewError
+                ? "Stars (cached)"
+                : "Total stars"}
+          </span>
+          <span className="text-xl font-semibold tabular-nums">
+            {profile ? profile.totalStars.toLocaleString("en-US") : "--"}
+          </span>
         </div>
       </header>
 
@@ -203,13 +195,13 @@ function WorkspacePage() {
               {cacheError} Any visible rows are from the last successful read.
             </Alert.Description>
             <Button
-              className="mt-3"
+              className="mt-2"
               size="sm"
               variant="secondary"
               isPending={isLoading}
               onPress={reloadCache}
             >
-              Retry cache
+              Retry
             </Button>
           </Alert.Content>
         </Alert>
@@ -218,11 +210,9 @@ function WorkspacePage() {
         <Alert status="warning">
           <Alert.Indicator />
           <Alert.Content>
-            <Alert.Title>Connect your GitHub account</Alert.Title>
             <Alert.Description>
-              <AppLink to="/settings">Open Settings</AppLink> to save a GitHub
-              token. Opening the workspace only reads your star total;
-              repositories load when you ask.
+              <AppLink to="/settings">Add your GitHub token</AppLink> to start
+              loading repositories.
             </Alert.Description>
           </Alert.Content>
         </Alert>
@@ -233,17 +223,16 @@ function WorkspacePage() {
           <Alert.Content>
             <Alert.Title>Could not update your star total</Alert.Title>
             <Alert.Description>
-              {overviewError} Saved repositories remain available. Check your
-              token in <AppLink to="/settings">Settings</AppLink>.
+              {overviewError} Your saved repositories are still available.
             </Alert.Description>
             <Button
-              className="mt-3"
+              className="mt-2"
               size="sm"
               variant="secondary"
               isPending={isOverviewLoading}
               onPress={reloadOverview}
             >
-              Retry total
+              Retry
             </Button>
           </Alert.Content>
         </Alert>
@@ -252,206 +241,205 @@ function WorkspacePage() {
         <Alert status="danger" role="alert">
           <Alert.Indicator />
           <Alert.Content>
-            <Alert.Title>Could not start the operation</Alert.Title>
+            <Alert.Title>Could not start</Alert.Title>
             <Alert.Description>{actionError}</Alert.Description>
           </Alert.Content>
         </Alert>
       ) : null}
 
-      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="flex min-w-0 flex-col gap-6">
-          <Card>
-            <Card.Header>
-              <Card.Title render={(props) => <h2 {...props} />}>
-                Load repositories
-              </Card.Title>
-              <Card.Description>
-                Fetch metadata and README together, then save them locally.
-                Loading never starts classification.
-              </Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <Form
-                className="flex flex-col gap-4"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  loadRepositories();
+      <div className="grid min-w-0 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <section
+          aria-label="Saved repositories"
+          className="flex min-w-0 flex-col gap-4"
+        >
+          <Form
+            className="flex flex-col gap-3"
+            onSubmit={(event) => {
+              event.preventDefault();
+              loadRepositories();
+            }}
+          >
+            <div className="grid grid-cols-[minmax(0,1fr)_8rem] items-start gap-3 sm:flex sm:flex-wrap">
+              <Select
+                name="loadMode"
+                className={
+                  mode === "specific"
+                    ? "col-span-2 w-full sm:w-48"
+                    : "w-full sm:w-48"
+                }
+                value={mode}
+                isDisabled={!ready || busy}
+                onChange={(key) => {
+                  if (
+                    key === "continue" ||
+                    key === "latest" ||
+                    key === "specific"
+                  )
+                    setMode(key);
                 }}
               >
-                <div
-                  className={
-                    mode === "specific"
-                      ? "grid items-start gap-4 sm:grid-cols-[minmax(0,1fr)_auto]"
-                      : "grid items-start gap-4 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
-                  }
+                <Label>Source</Label>
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {loadModes.map((option) => (
+                      <ListBox.Item
+                        id={option.id}
+                        key={option.id}
+                        textValue={option.name}
+                      >
+                        <Label>{option.name}</Label>
+                        <Description>{option.description}</Description>
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+              {mode !== "specific" ? (
+                <NumberField
+                  name="loadCount"
+                  className="w-full sm:w-36"
+                  value={count}
+                  onChange={setCount}
+                  minValue={1}
+                  maxValue={1000}
+                  step={1}
+                  isRequired
+                  isInvalid={invalidCount}
+                  isDisabled={!ready || busy}
+                  validationBehavior="aria"
                 >
-                  <Select
-                    name="loadMode"
-                    value={mode}
-                    isDisabled={!ready || busy}
-                    onChange={(key) => {
-                      if (
-                        key === "continue" ||
-                        key === "latest" ||
-                        key === "specific"
-                      )
-                        setMode(key);
-                    }}
-                  >
-                    <Label>Load mode</Label>
-                    <Select.Trigger>
-                      <Select.Value />
-                      <Select.Indicator />
-                    </Select.Trigger>
-                    <Select.Popover>
-                      <ListBox>
-                        {loadModes.map((option) => (
-                          <ListBox.Item
-                            id={option.id}
-                            key={option.id}
-                            textValue={option.name}
-                          >
-                            <Label>{option.name}</Label>
-                            <ListBox.ItemIndicator />
-                          </ListBox.Item>
-                        ))}
-                      </ListBox>
-                    </Select.Popover>
-                  </Select>
-                  {mode !== "specific" ? (
-                    <NumberField
-                      name="loadCount"
-                      value={count}
-                      onChange={setCount}
-                      minValue={1}
-                      maxValue={1000}
-                      step={1}
-                      isRequired
-                      isInvalid={invalidCount}
-                      isDisabled={!ready || busy}
-                      validationBehavior="aria"
-                    >
-                      <Label>Count</Label>
-                      <NumberField.Group>
-                        <NumberField.DecrementButton aria-label="Decrease load count" />
-                        <NumberField.Input className="w-full min-w-0" />
-                        <NumberField.IncrementButton aria-label="Increase load count" />
-                      </NumberField.Group>
-                      <FieldError>Enter 1 to 1,000 repositories.</FieldError>
-                    </NumberField>
-                  ) : null}
-                  <Button
-                    type="submit"
-                    className="sm:mt-7"
-                    isDisabled={!canLoad}
-                    isPending={loadPending}
-                  >
-                    {pending === "load"
-                      ? "Starting…"
-                      : loadPending
-                        ? "Loading…"
-                        : "Load"}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted">
-                  {loadModes.find((option) => option.id === mode)?.description}
-                </p>
-                {mode === "specific" ? (
-                  <TextField
-                    name="repositories"
-                    value={specificRepositories}
-                    onChange={setSpecificRepositories}
-                    isRequired
-                    isInvalid={specificEntries.length > 1000}
-                    isDisabled={busy}
-                  >
-                    <Label>Specific repositories</Label>
-                    <TextArea rows={3} className="w-full font-mono text-sm" />
-                    <Description>
-                      Enter owner/repository names or HTTPS github.com
-                      repository URLs, separated by spaces, commas, or new
-                      lines. {specificEntries.length.toLocaleString("en-US")}{" "}
-                      entries; maximum 1,000.
-                    </Description>
-                    <FieldError>
-                      Enter between 1 and 1,000 starred repositories.
-                    </FieldError>
-                  </TextField>
-                ) : null}
-              </Form>
-            </Card.Content>
-            <Card.Footer className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-muted">
-                Successfully loaded repositories are selected automatically.
-              </p>
-              <AppLink to="/settings" className="text-xs">
-                Manage credentials
-              </AppLink>
-            </Card.Footer>
-          </Card>
-
-          <section
-            aria-labelledby="repositories-heading"
-            className="flex min-w-0 flex-col gap-4"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="space-y-1">
-                <h2 id="repositories-heading" className="text-lg font-semibold">
-                  Saved repositories
-                </h2>
-                <p className="text-xs text-muted">
-                  All categories appear as columns. Scroll horizontally to
-                  compare probabilities.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  isDisabled={!canRefresh}
-                  isPending={refreshPending}
-                  onPress={() => {
-                    void startOperation("refresh", "/github/refresh", {
-                      repositoryIds: Array.from(selected),
-                    });
-                  }}
-                >
-                  {pending === "refresh"
-                    ? "Starting…"
-                    : refreshPending
-                      ? "Refreshing…"
-                      : "Refresh selected"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="tertiary"
-                  isDisabled={selected.size === 0}
-                  onPress={() => setSelected(new Set())}
-                >
-                  Clear selection
-                </Button>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-end gap-4">
-              <SearchField
-                name="repositorySearch"
-                className="min-w-0 flex-1 basis-52"
-                value={searchText}
-                onChange={setSearchText}
+                  <Label>Count</Label>
+                  <NumberField.Group>
+                    <NumberField.DecrementButton aria-label="Decrease load count" />
+                    <NumberField.Input className="w-full min-w-0" />
+                    <NumberField.IncrementButton aria-label="Increase load count" />
+                  </NumberField.Group>
+                  <FieldError>Enter 1 to 1,000.</FieldError>
+                </NumberField>
+              ) : null}
+              <Button
+                type="submit"
+                className="col-span-2 w-full sm:mt-6 sm:w-auto"
+                isDisabled={!canLoad}
+                isPending={loadPending}
               >
-                <Label>Search saved repositories</Label>
-                <SearchField.Group>
-                  <SearchField.SearchIcon />
-                  <SearchField.Input
-                    className="w-full min-w-0"
-                    placeholder="Owner or repository name"
-                  />
-                  <SearchField.ClearButton />
-                </SearchField.Group>
-              </SearchField>
+                {pending === "load"
+                  ? "Starting…"
+                  : loadPending
+                    ? "Loading…"
+                    : "Load"}
+              </Button>
+            </div>
+            {mode === "specific" ? (
+              <TextField
+                name="repositories"
+                value={specificRepositories}
+                onChange={setSpecificRepositories}
+                isRequired
+                isInvalid={specificEntries.length > 1000}
+                isDisabled={busy}
+              >
+                <Label>Specific repositories</Label>
+                <TextArea rows={3} className="w-full font-mono text-sm" />
+                <Description>
+                  One owner/repo or GitHub URL per line.{" "}
+                  {specificEntries.length} entered; maximum 1,000.
+                </Description>
+                <FieldError>
+                  Enter between 1 and 1,000 starred repositories.
+                </FieldError>
+              </TextField>
+            ) : null}
+          </Form>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <SearchField
+              name="repositorySearch"
+              aria-label="Search saved repositories"
+              className="min-w-0 flex-1 basis-52"
+              value={searchText}
+              onChange={setSearchText}
+            >
+              <SearchField.Group>
+                <SearchField.SearchIcon />
+                <SearchField.Input
+                  className="w-full min-w-0"
+                  placeholder="Search saved repositories"
+                />
+                <SearchField.ClearButton />
+              </SearchField.Group>
+            </SearchField>
+            <Button
+              size="sm"
+              variant="secondary"
+              isDisabled={!canRefresh}
+              isPending={refreshPending}
+              onPress={() => {
+                void startOperation("refresh", "/github/refresh", {
+                  repositoryIds: Array.from(selected),
+                });
+              }}
+            >
+              {pending === "refresh"
+                ? "Starting…"
+                : refreshPending
+                  ? "Refreshing…"
+                  : "Refresh selected"}
+            </Button>
+            <Button
+              size="sm"
+              variant="tertiary"
+              isDisabled={selected.size === 0}
+              onPress={() => setSelected(new Set())}
+            >
+              Clear selection
+            </Button>
+          </div>
+
+          {tablePending ? (
+            <ProgressBar
+              isIndeterminate
+              aria-label="Reading local repositories"
+              size="sm"
+            >
+              <ProgressBar.Track>
+                <ProgressBar.Fill />
+              </ProgressBar.Track>
+            </ProgressBar>
+          ) : null}
+          <RepositoryMatrix
+            repositories={repositories}
+            categories={categories}
+            selected={selected}
+            onSelectionChange={changeSelection}
+            failures={
+              job?.kind === "classification" ? job.errors : emptyFailures
+            }
+            isLoading={tablePending}
+            isSearching={query.search.length > 0}
+            hasError={Boolean(cacheError)}
+          />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs text-muted" role="status">
+              {tablePending
+                ? "Loading…"
+                : workspace
+                  ? `${workspace.total === 0 ? 0 : query.offset + 1}–${Math.min(query.offset + repositories.length, workspace.total)} of ${workspace.total.toLocaleString("en-US")} saved${query.search ? " matches" : ""}`
+                  : "Cache unavailable"}
+            </p>
+            <nav
+              aria-label="Repository pages"
+              className="flex flex-wrap items-center gap-2"
+            >
               <Select
                 aria-label="Rows per page"
-                className="w-36"
+                className="w-20"
                 value={String(query.limit)}
                 isDisabled={tablePending}
                 onChange={(key) => {
@@ -460,7 +448,6 @@ function WorkspacePage() {
                     setQuery((current) => ({ ...current, limit, offset: 0 }));
                 }}
               >
-                <Label>Rows per page</Label>
                 <Select.Trigger>
                   <Select.Value />
                   <Select.Indicator />
@@ -480,86 +467,42 @@ function WorkspacePage() {
                   </ListBox>
                 </Select.Popover>
               </Select>
-            </div>
-            <p className="text-xs text-muted">
-              Search and pagination use only the local cache. Selection is kept
-              across pages. Refresh updates only selected metadata and READMEs.
-            </p>
-            {tablePending ? (
-              <ProgressBar
-                isIndeterminate
-                aria-label="Reading local repositories"
+              <Button
                 size="sm"
+                variant="secondary"
+                isDisabled={tablePending || query.offset === 0 || !ready}
+                onPress={() =>
+                  setQuery((current) => ({
+                    ...current,
+                    offset: Math.max(0, current.offset - current.limit),
+                  }))
+                }
               >
-                <ProgressBar.Track>
-                  <ProgressBar.Fill />
-                </ProgressBar.Track>
-              </ProgressBar>
-            ) : null}
-            <RepositoryMatrix
-              repositories={repositories}
-              categories={categories}
-              selected={selected}
-              onSelectionChange={changeSelection}
-              failures={
-                job?.kind === "classification" ? job.errors : emptyFailures
-              }
-              isLoading={tablePending}
-              isSearching={query.search.length > 0}
-              hasError={Boolean(cacheError)}
-            />
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-muted" role="status">
-                {tablePending
-                  ? "Reading local cache…"
-                  : workspace
-                    ? `${workspace.total === 0 ? 0 : query.offset + 1}–${Math.min(query.offset + repositories.length, workspace.total)} of ${workspace.total.toLocaleString("en-US")} saved repositories${query.search ? " matching your search" : ""}`
-                    : "Local cache has not loaded."}
-              </p>
-              <nav
-                aria-label="Repository pages"
-                className="flex items-center gap-2"
+                Previous
+              </Button>
+              <span className="text-xs tabular-nums">
+                {page} / {pageCount}
+              </span>
+              <Button
+                size="sm"
+                variant="secondary"
+                isDisabled={tablePending || !ready || page >= pageCount}
+                onPress={() =>
+                  setQuery((current) => ({
+                    ...current,
+                    offset: current.offset + current.limit,
+                  }))
+                }
               >
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  isDisabled={tablePending || query.offset === 0 || !ready}
-                  onPress={() =>
-                    setQuery((current) => ({
-                      ...current,
-                      offset: Math.max(0, current.offset - current.limit),
-                    }))
-                  }
-                >
-                  Previous
-                </Button>
-                <span className="text-xs tabular-nums">
-                  Page {page} of {pageCount}
-                </span>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  isDisabled={tablePending || !ready || page >= pageCount}
-                  onPress={() =>
-                    setQuery((current) => ({
-                      ...current,
-                      offset: current.offset + current.limit,
-                    }))
-                  }
-                >
-                  Next
-                </Button>
-              </nav>
-            </div>
-            <p className="text-xs text-muted">
-              <span className="font-mono">--</span> means no current
-              probability, including stale or failed results. Probabilities are
-              independent and do not need to add up to 100%. “Input truncated”
-              means Jev used a README excerpt; the full README remains saved.
-            </p>
-          </section>
-        </div>
-
+                Next
+              </Button>
+            </nav>
+          </div>
+          <p className="text-xs text-muted">
+            Each column is an independent probability.{" "}
+            <span className="tabular-nums">--</span> means no current result.
+          </p>
+        </section>
         <ClassificationSidebar
           selectedCount={selected.size}
           categoryCount={workspace ? categories.length : null}

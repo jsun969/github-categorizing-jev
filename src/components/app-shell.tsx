@@ -1,4 +1,4 @@
-import { Card, Chip } from "@heroui/react";
+import { Chip, Separator } from "@heroui/react";
 import { useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { AppLink } from "./app-link";
@@ -16,41 +16,32 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-svh">
-      <header className="mx-auto max-w-[1800px] px-4 pt-4 sm:px-6">
-        <Card>
-          <Card.Content className="flex flex-wrap items-center justify-between gap-4 sm:flex-row">
-            <div className="flex flex-col gap-1">
-              <AppLink to="/" className="text-lg font-semibold">
-                GitHub Stars
+      <header className="mx-auto max-w-[1600px] px-4 sm:px-6">
+        <div className="flex min-h-16 flex-wrap items-center gap-x-8 gap-y-3 py-3">
+          <AppLink to="/" className="font-semibold">
+            GitHub Stars
+          </AppLink>
+          <nav aria-label="Main navigation" className="flex items-center gap-5">
+            {navigation.map(({ path, label }) => (
+              <AppLink
+                key={path}
+                to={path}
+                aria-current={pathname === path ? "page" : undefined}
+                className={
+                  pathname === path ? "text-sm font-semibold" : "text-sm"
+                }
+              >
+                {label}
               </AppLink>
-              <p className="text-xs text-muted">Categorize with Jev</p>
-            </div>
-            <nav
-              aria-label="Main navigation"
-              className="flex flex-wrap items-center gap-2"
-            >
-              {navigation.map(({ path, label }) => (
-                <AppLink
-                  key={path}
-                  to={path}
-                  aria-current={pathname === path ? "page" : undefined}
-                >
-                  <Chip
-                    color={pathname === path ? "accent" : "default"}
-                    variant={pathname === path ? "soft" : "tertiary"}
-                  >
-                    {label}
-                  </Chip>
-                </AppLink>
-              ))}
-            </nav>
-            <Chip size="sm" variant="soft">
-              Local preview
-            </Chip>
-          </Card.Content>
-        </Card>
+            ))}
+          </nav>
+          <Chip size="sm" variant="soft" className="ms-auto">
+            Preview only
+          </Chip>
+        </div>
+        <Separator />
       </header>
-      <main className="mx-auto max-w-[1800px] px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-[1600px] px-4 py-6 sm:px-6">
         {children}
       </main>
     </div>

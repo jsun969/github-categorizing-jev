@@ -27,6 +27,7 @@
 - Package manager: `pnpm`.
 - Stack: TypeScript, React, TanStack Start, Hono, and HeroUI.
 - UI must use HeroUI v3 components and their default theme. Do not add custom CSS or override component visuals; use Tailwind utilities only for layout, spacing, responsiveness, and semantic typography.
+- Keep the Workspace table-first and compact. Avoid decorative card wrappers and repeated explanatory copy; use detail tooltips rather than inflating every repository row.
 - Purpose: use TypeSafe's Jev to classify GitHub starred repositories into user-defined Star Lists, allowing multiple lists per repository.
 - Current scope: a local single-user classification preview with SQLite persistence and no writes to GitHub Star Lists. Node.js 24 or newer is required for the built-in SQLite runtime.
 - The `scripts/` directory contains earlier experiments. Leave its contents unchanged unless the user explicitly asks to modify them.
@@ -36,8 +37,8 @@
 | Feature / Concern                                                       | Location                                                                                                  |
 | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | Project purpose, preview-only scope, and local setup                    | `README.md`                                                                                               |
-| Workspace controls, repository matrix, selection, and job polling       | `src/routes/index.tsx`, `src/components/workspace/`                                                       |
-| Token settings and confirmed category JSON replacement                  | `src/routes/settings.tsx`, `src/routes/categories.tsx`                                                    |
+| Compact Workspace toolbar, native HeroUI matrix, selection, and jobs    | `src/routes/index.tsx`, `src/components/workspace/`                                                       |
+| Compact token form and confirmed category JSON replacement              | `src/routes/settings.tsx`, `src/routes/categories.tsx`                                                    |
 | Root document and shared styles                                         | `src/routes/__root.tsx`, `src/styles.css`                                                                 |
 | HeroUI navigation and shared API contracts                              | `src/components/app-shell.tsx`, `src/components/app-link.tsx`, `src/lib/contracts.ts`, `src/lib/api.ts`   |
 | TanStack Router setup                                                   | `src/router.tsx`; `src/routeTree.gen.ts` is generated                                                     |
