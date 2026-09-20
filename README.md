@@ -131,11 +131,11 @@ This is **not a public multi-user service**. Development and production commands
 
 TypeScript, React, TanStack Start, Hono, HeroUI v3, Tailwind CSS v4, Vite, Nitro, Node.js SQLite, and the TypeSafe SDK.
 
-All UI controls use HeroUI components. `src/styles.css` imports Tailwind and HeroUI, then sets the approved global radius tokens: `--radius: 0.125rem` and `--field-radius: 0.25rem`. At the default root font size, buttons, cards, and dialogs have 6px corners; inputs and textareas have 4px corners. Colors, shadows, and other component styling remain at HeroUI defaults. Tailwind utilities handle layout, spacing, responsive behavior, and semantic typography; there are no per-component visual overrides.
+All UI controls use HeroUI components. `src/styles.css` imports Tailwind and HeroUI, then sets the approved global presets: radius S (`--radius: 0.25rem`) and form radius M (`--field-radius: 0.5rem`). At the default root font size, buttons, cards, and dialogs have 12px corners; inputs and textareas have 8px corners. Colors, shadows, and other component styling remain at HeroUI defaults. Tailwind utilities handle layout, spacing, responsive behavior, and semantic typography; there are no per-component visual overrides. Navigation links use HeroUI button variants, probabilities use `Meter`, task progress uses `ProgressBar`, and contextual hints use `Tooltip`.
 
 | Path                                                                                   | Purpose                                                                                           |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `src/routes/index.tsx`, `src/components/workspace/`                                    | Workspace controls, cached repository table, probability bars, selection, and job polling.        |
+| `src/routes/index.tsx`, `src/components/workspace/`                                    | Workspace controls, cached repository table, probability meters, selection, and job polling.      |
 | `src/routes/settings.tsx`                                                              | Server-side token configuration.                                                                  |
 | `src/routes/categories.tsx`                                                            | Manual category creation, editing, deletion, and confirmed JSON replacement.                      |
 | `src/routes/__root.tsx`, `src/components/app-shell.tsx`, `src/components/app-link.tsx` | Root document and HeroUI navigation.                                                              |

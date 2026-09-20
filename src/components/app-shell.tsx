@@ -1,4 +1,4 @@
-import { Chip, Separator } from "@heroui/react";
+import { buttonVariants, Chip, Separator } from "@heroui/react";
 import { useRouterState } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { AppLink } from "./app-link";
@@ -9,6 +9,11 @@ const navigation = [
   { path: "/settings", label: "Settings" },
 ] as const;
 
+const navigationClasses = {
+  active: buttonVariants({ variant: "tertiary", size: "sm" }),
+  inactive: buttonVariants({ variant: "ghost", size: "sm" }),
+};
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
@@ -17,18 +22,23 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-svh">
       <header className="mx-auto max-w-[1600px] px-4 sm:px-6">
-        <div className="flex min-h-16 flex-wrap items-center gap-x-8 gap-y-3 py-3">
-          <AppLink to="/" className="font-semibold">
+        <div className="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-2 py-3">
+          <AppLink to="/" className={navigationClasses.inactive}>
             GitHub Stars
           </AppLink>
-          <nav aria-label="Main navigation" className="flex items-center gap-5">
+          <nav
+            aria-label="Main navigation"
+            className="order-last flex w-full items-center gap-1 sm:order-none sm:w-auto"
+          >
             {navigation.map(({ path, label }) => (
               <AppLink
                 key={path}
                 to={path}
                 aria-current={pathname === path ? "page" : undefined}
                 className={
-                  pathname === path ? "text-sm font-semibold" : "text-sm"
+                  pathname === path
+                    ? navigationClasses.active
+                    : navigationClasses.inactive
                 }
               >
                 {label}

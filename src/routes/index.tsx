@@ -12,6 +12,7 @@ import {
   Select,
   TextArea,
   TextField,
+  Tooltip,
 } from "@heroui/react";
 import type { Selection } from "@heroui/react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -164,15 +165,7 @@ function WorkspacePage() {
     <div className="flex min-w-0 flex-col gap-5">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold">Workspace</h1>
-        <div
-          className="flex items-baseline gap-2"
-          aria-live="polite"
-          title={
-            profile
-              ? `GitHub account: ${profile.login}. Updated ${new Date(profile.fetchedAt).toLocaleString("en-US")}.`
-              : undefined
-          }
-        >
+        <div className="flex items-baseline gap-2" aria-live="polite">
           <span className="text-sm text-muted">
             {isOverviewLoading
               ? "Checking stars…"
@@ -180,9 +173,19 @@ function WorkspacePage() {
                 ? "Stars (cached)"
                 : "Total stars"}
           </span>
-          <span className="text-xl font-semibold tabular-nums">
-            {profile ? profile.totalStars.toLocaleString("en-US") : "--"}
-          </span>
+          {profile ? (
+            <Tooltip>
+              <Tooltip.Trigger className="text-xl font-semibold tabular-nums">
+                {profile.totalStars.toLocaleString("en-US")}
+              </Tooltip.Trigger>
+              <Tooltip.Content className="max-w-xs">
+                GitHub account: {profile.login}. Updated{" "}
+                {new Date(profile.fetchedAt).toLocaleString("en-US")}.
+              </Tooltip.Content>
+            </Tooltip>
+          ) : (
+            <span className="text-xl font-semibold tabular-nums">--</span>
+          )}
         </div>
       </header>
 

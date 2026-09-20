@@ -2,6 +2,6 @@
 @import "@heroui/styles";
 
 :root {
-  --radius: 0.125rem;
-  --field-radius: 0.25rem;
+  --radius: 0.25rem;
+  --field-radius: 0.5rem;
 }

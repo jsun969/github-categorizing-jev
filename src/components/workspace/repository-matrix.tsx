@@ -1,11 +1,4 @@
-import {
-  Checkbox,
-  Chip,
-  Link,
-  ProgressBar,
-  Table,
-  Tooltip,
-} from "@heroui/react";
+import { Checkbox, Chip, Link, Meter, Table, Tooltip } from "@heroui/react";
 import type { Selection } from "@heroui/react";
 import { memo, useMemo } from "react";
 import type { Category, Job, RepositoryRow } from "../../lib/contracts";
@@ -175,30 +168,50 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                           {repository.fullName}
                         </Link>
                         {failure ? (
-                          <Chip size="sm" color="danger" title={failure}>
-                            Error
-                          </Chip>
+                          <Tooltip>
+                            <Tooltip.Trigger
+                              aria-label={`Classification error for ${repository.fullName}`}
+                            >
+                              <Chip size="sm" color="danger">
+                                Error
+                              </Chip>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content className="max-w-xs">
+                              {failure}
+                            </Tooltip.Content>
+                          </Tooltip>
                         ) : repository.classificationStatus === "stale" ? (
-                          <Chip
-                            size="sm"
-                            color="warning"
-                            title="Content or categories changed. Classify again."
-                          >
-                            Stale
-                          </Chip>
+                          <Tooltip>
+                            <Tooltip.Trigger
+                              aria-label={`Stale classification for ${repository.fullName}`}
+                            >
+                              <Chip size="sm" color="warning">
+                                Stale
+                              </Chip>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content className="max-w-xs">
+                              Content or categories changed. Classify again.
+                            </Tooltip.Content>
+                          </Tooltip>
                         ) : null}
                         {repository.archived ? (
                           <Chip size="sm">Archived</Chip>
                         ) : null}
                         {repository.inputTruncated &&
                         repository.classificationStatus === "current" ? (
-                          <Chip
-                            size="sm"
-                            color="warning"
-                            title="Jev used a README excerpt; the full README remains saved."
-                          >
-                            Excerpt
-                          </Chip>
+                          <Tooltip>
+                            <Tooltip.Trigger
+                              aria-label={`README excerpt used for ${repository.fullName}`}
+                            >
+                              <Chip size="sm" color="warning">
+                                Excerpt
+                              </Chip>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content className="max-w-xs">
+                              Jev used a README excerpt; the full README remains
+                              saved.
+                            </Tooltip.Content>
+                          </Tooltip>
                         ) : null}
                       </div>
                       <Tooltip>
@@ -254,7 +267,7 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                     return (
                       <Table.Cell key={category.id}>
                         {valid ? (
-                          <ProgressBar
+                          <Meter
                             aria-label={`${repository.fullName}: ${category.name} probability`}
                             minValue={0}
                             maxValue={1}
@@ -263,19 +276,23 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                             formatOptions={probabilityFormat}
                             className="flex min-w-28 flex-row items-center gap-3"
                           >
-                            <ProgressBar.Track className="min-w-0 flex-1">
-                              <ProgressBar.Fill />
-                            </ProgressBar.Track>
-                            <ProgressBar.Output className="w-12 shrink-0 text-right text-xs tabular-nums" />
-                          </ProgressBar>
+                            <Meter.Track className="min-w-0 flex-1">
+                              <Meter.Fill />
+                            </Meter.Track>
+                            <Meter.Output className="w-12 shrink-0 text-right text-xs tabular-nums" />
+                          </Meter>
                         ) : (
-                          <span
-                            className="text-sm text-muted"
-                            aria-label={`${category.name}: ${unavailable}`}
-                            title={unavailable}
-                          >
-                            --
-                          </span>
+                          <Tooltip>
+                            <Tooltip.Trigger
+                              className="text-sm text-muted"
+                              aria-label={`${category.name}: ${unavailable}`}
+                            >
+                              --
+                            </Tooltip.Trigger>
+                            <Tooltip.Content className="max-w-xs">
+                              {unavailable}
+                            </Tooltip.Content>
+                          </Tooltip>
                         )}
                       </Table.Cell>
                     );
