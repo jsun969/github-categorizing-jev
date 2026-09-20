@@ -131,7 +131,7 @@ This is **not a public multi-user service**. Development and production commands
 
 TypeScript, React, TanStack Start, Hono, HeroUI v3, Tailwind CSS v4, Vite, Nitro, Node.js SQLite, and the TypeSafe SDK.
 
-All UI controls use HeroUI components and the default theme. Tailwind utilities handle layout, spacing, responsive behavior, and semantic typography; `src/styles.css` contains only the Tailwind and HeroUI imports.
+All UI controls use HeroUI components. `src/styles.css` imports Tailwind and HeroUI, then sets the approved global radius tokens: `--radius: 0.125rem` and `--field-radius: 0.25rem`. At the default root font size, buttons, cards, and dialogs have 6px corners; inputs and textareas have 4px corners. Colors, shadows, and other component styling remain at HeroUI defaults. Tailwind utilities handle layout, spacing, responsive behavior, and semantic typography; there are no per-component visual overrides.
 
 | Path                                                                                   | Purpose                                                                                           |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |

@@ -26,7 +26,8 @@
 - Project name: `github-categorizing-jev`.
 - Package manager: `pnpm`.
 - Stack: TypeScript, React, TanStack Start, Hono, and HeroUI.
-- UI must use HeroUI v3 components and their default theme. Do not add custom CSS or override component visuals; use Tailwind utilities only for layout, spacing, responsiveness, and semantic typography.
+- UI must use HeroUI v3 components. Keep default component styles and use only approved global HeroUI theme tokens in `src/styles.css`; do not add custom component CSS or per-component visual overrides. Use Tailwind utilities only for layout, spacing, responsiveness, and semantic typography.
+- Approved radius theme: `--radius: 0.125rem` and `--field-radius: 0.25rem` (6px buttons/cards/dialogs and 4px fields at the default 16px root font size). Keep other HeroUI theme defaults.
 - Keep the Workspace table-first and compact. Avoid decorative card wrappers and repeated explanatory copy; use detail tooltips rather than inflating every repository row.
 - Purpose: use TypeSafe's Jev to classify GitHub starred repositories into user-defined Star Lists, allowing multiple lists per repository.
 - Current scope: a local single-user classification preview with SQLite persistence and no writes to GitHub Star Lists. Node.js 24 or newer is required for the built-in SQLite runtime.
@@ -40,7 +41,7 @@
 | Compact Workspace toolbar, native HeroUI matrix, selection, and jobs    | `src/routes/index.tsx`, `src/components/workspace/`                                                       |
 | Token settings, manual category CRUD, and confirmed JSON replacement    | `src/routes/settings.tsx`, `src/routes/categories.tsx`                                                    |
 | Atomic category mutations, shared validation, and preview invalidation  | `src/server/api.ts`, `src/server/store.ts`                                                                |
-| Root document and shared styles                                         | `src/routes/__root.tsx`, `src/styles.css`                                                                 |
+| Root document and centralized HeroUI radius theme                       | `src/routes/__root.tsx`, `src/styles.css`                                                                 |
 | HeroUI navigation and shared API contracts                              | `src/components/app-shell.tsx`, `src/components/app-link.tsx`, `src/lib/contracts.ts`, `src/lib/api.ts`   |
 | TanStack Router setup                                                   | `src/router.tsx`; `src/routeTree.gen.ts` is generated                                                     |
 | Server entry and Hono integration                                       | `src/server.ts`                                                                                           |
