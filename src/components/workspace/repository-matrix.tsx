@@ -12,6 +12,12 @@ const dateFormat = new Intl.DateTimeFormat("en", {
   timeStyle: "short",
 });
 
+function probabilityColor(probability: number): "default" | "accent" | "success" {
+  if (probability < 0.5) return "default";
+  if (probability <= 0.8) return "accent";
+  return "success";
+}
+
 interface RepositoryMatrixProps {
   repositories: RepositoryRow[];
   categories: Category[];
@@ -272,12 +278,17 @@ export const RepositoryMatrix = memo(function RepositoryMatrix({
                             minValue={0}
                             maxValue={1}
                             value={probability}
+                            color={probabilityColor(probability)}
                             size="sm"
                             formatOptions={probabilityFormat}
                             className="flex min-w-28 flex-row items-center gap-3"
                           >
                             <Meter.Track className="min-w-0 flex-1">
-                              <Meter.Fill />
+                              <Meter.Fill
+                                className={
+                                  probability < 0.5 ? "bg-muted" : undefined
+                                }
+                              />
                             </Meter.Track>
                             <Meter.Output className="w-12 shrink-0 text-right text-xs tabular-nums" />
                           </Meter>
