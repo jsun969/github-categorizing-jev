@@ -502,7 +502,10 @@ function CategoriesPage() {
                   spellCheck={false}
                   autoCapitalize="off"
                   autoCorrect="off"
-                  placeholder="Paste a JSON array here"
+                  placeholder={[
+                    '[{"name": "Developer tools", "description": "Tools for building, testing, and debugging software."},',
+                    ' {"name": "Data systems", "description": "Databases, storage engines, and data processing systems."}]',
+                  ].join("\n")}
                 />
                 <Description>
                   Each object needs a nonempty <code>name</code> and{" "}
